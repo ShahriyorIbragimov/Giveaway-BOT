@@ -9,7 +9,7 @@ MVP-проект бота и mini app для розыгрышей в MAX.
 - **UI kit:** [`@maxhub/max-ui`](https://github.com/max-messenger/max-ui)
 - **Mini app bridge:** `window.MaxBridge` из [официальной документации](https://dev.max.ru/docs/webapps/bridge)
 - **Backend:** Express + TypeScript
-- **Frontend:** React + Vite + TypeScript
+- **Frontend:** React + Vite + TypeScript + TailwindCSS
 
 ## Что сделано (MVP)
 
@@ -21,7 +21,8 @@ MVP-проект бота и mini app для розыгрышей в MAX.
 - проверка доступа бота в каналах/группах (`добавлен как админ` + права `add_remove_members`, `write`, `pin_message`).
 
 ### Mini app UI
-- светлая адаптивная тема без тёмного «хвоста» внизу страницы;
+- стилизация через TailwindCSS (`darkMode: class`);
+- переключатель темы (light/dark) прямо в интерфейсе;
 - форма с несколькими каналами/группами (добавление/удаление строк);
 - кнопка проверки доступа бота по всем указанным каналам/группам;
 - вывод детального отчёта проверки перед созданием розыгрыша.
