@@ -1,17 +1,22 @@
 :root {
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #dce6ff;
-  background: radial-gradient(circle at top left, #1f2d5c, #0a1026 55%, #090d1d);
+  color: #1b2a4a;
+  background: #f4f7ff;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
 body {
   margin: 0;
-  min-height: 100vh;
-  background: transparent;
+  background: linear-gradient(180deg, #f7faff 0%, #f2f6ff 100%);
 }
 
 .page {
@@ -25,9 +30,8 @@ body {
 .hero {
   padding: 20px;
   border-radius: 18px;
-  background: linear-gradient(140deg, rgba(82, 120, 255, 0.35), rgba(50, 199, 255, 0.2));
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(163, 188, 255, 0.35);
+  background: linear-gradient(140deg, rgba(82, 120, 255, 0.15), rgba(50, 199, 255, 0.08));
+  border: 1px solid rgba(163, 188, 255, 0.45);
   display: grid;
   gap: 6px;
 }
@@ -41,11 +45,11 @@ body {
 .statCard,
 .formCard,
 .giveawayCard,
-.emptyState {
-  border: 1px solid rgba(146, 167, 255, 0.25);
-  background: rgba(10, 18, 40, 0.7);
+.emptyState,
+.checkPanel {
+  border: 1px solid rgba(146, 167, 255, 0.35);
+  background: #ffffff;
   border-radius: 16px;
-  backdrop-filter: blur(7px);
 }
 
 .statCard {
@@ -64,6 +68,61 @@ body {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.channelsBlock {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px dashed #b8c7ff;
+  background: #f7f9ff;
+}
+
+.channelsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.channelRow {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.channelActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.checkPanel {
+  padding: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.checksList {
+  display: grid;
+  gap: 8px;
+}
+
+.checkItem {
+  border-radius: 10px;
+  padding: 8px;
+  border: 1px solid #d6e0ff;
+}
+
+.checkItem.ok {
+  background: #effdf5;
+  border-color: #a6eec2;
+}
+
+.checkItem.fail {
+  background: #fff3f5;
+  border-color: #ffc6d1;
 }
 
 .listSection {
@@ -105,22 +164,22 @@ body {
 }
 
 .statusDraft {
-  color: #ffe8a3;
-  background: rgba(255, 196, 0, 0.2);
+  color: #8f6200;
+  background: #fff6d6;
 }
 
 .statusPublished {
-  color: #8dffbf;
-  background: rgba(9, 196, 108, 0.2);
+  color: #067647;
+  background: #ddfaea;
 }
 
 .statusFinished {
-  color: #ffbec9;
-  background: rgba(236, 72, 153, 0.22);
+  color: #b42352;
+  background: #ffe4ed;
 }
 
 .description {
-  opacity: 0.85;
+  color: #46577e;
 }
 
 .metaRow {
@@ -128,7 +187,11 @@ body {
   justify-content: space-between;
   gap: 8px;
   padding-bottom: 6px;
-  border-bottom: 1px dashed rgba(145, 162, 225, 0.2);
+  border-bottom: 1px dashed rgba(145, 162, 225, 0.3);
+}
+
+.channelsMeta {
+  align-items: flex-start;
 }
 
 .actions {
@@ -138,7 +201,7 @@ body {
 }
 
 .errorText {
-  color: #ff7f9d;
+  color: #c01048;
 }
 
 .emptyState {
@@ -159,13 +222,15 @@ body {
 
   .statsGrid,
   .giveawayGrid,
-  .formGrid {
+  .formGrid,
+  .channelRow {
     grid-template-columns: 1fr;
   }
 
   .listHeader,
   .giveawayHeader,
-  .metaRow {
+  .metaRow,
+  .channelsHeader {
     flex-direction: column;
     align-items: flex-start;
   }

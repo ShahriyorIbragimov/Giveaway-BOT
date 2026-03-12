@@ -17,6 +17,22 @@ type Giveaway = {
   status: 'draft' | 'published' | 'finished';
 };
 
+type ChatAccessResult = {
+  input: string;
+  ok: boolean;
+  chatId?: number;
+  chatTitle?: string | null;
+  isAdmin?: boolean;
+  missingPermissions?: string[];
+  reason?: string;
+};
+
+type ChatAccessReport = {
+  requiredPermissions: string[];
+  allPassed: boolean;
+  results: ChatAccessResult[];
+};
+
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
 
 const statusMap: Record<Giveaway['status'], { text: string; className: string }> = {
@@ -33,7 +49,7 @@ export function App() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('Москва');
-  const [requiredChats, setRequiredChats] = useState('https://max.ru/channel/your-channel');
+  const [requiredChats, setRequiredChats] = useState<string[]>(['']);
   const [publishAt, setPublishAt] = useState(toDateInputValue(dayjs().add(1, 'hour')));
   const [drawAt, setDrawAt] = useState(toDateInputValue(dayjs().add(2, 'day')));
   const [prizeTitle, setPrizeTitle] = useState('Подарочный набор');
@@ -41,11 +57,15 @@ export function App() {
   const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingChats, setCheckingChats] = useState(false);
+  const [chatReport, setChatReport] = useState<ChatAccessReport | null>(null);
 
   useEffect(() => {
     initMiniAppBridge();
     void loadGiveaways();
   }, []);
+
+  const cleanChats = useMemo(() => requiredChats.map((item) => item.trim()).filter(Boolean), [requiredChats]);
 
   const stats = useMemo(() => {
     const total = giveaways.length;
@@ -63,11 +83,11 @@ export function App() {
           description.trim() &&
           publishAt &&
           drawAt &&
-          requiredChats.trim() &&
+          cleanChats.length > 0 &&
           prizeTitle.trim() &&
           prizeCount > 0
       ),
-    [description, drawAt, prizeCount, prizeTitle, publishAt, requiredChats, title]
+    [cleanChats.length, description, drawAt, prizeCount, prizeTitle, publishAt, title]
   );
 
   async function loadGiveaways() {
@@ -78,6 +98,29 @@ export function App() {
       setGiveaways(data);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function verifyBotAccess() {
+    setCheckingChats(true);
+    setError('');
+    try {
+      const response = await fetch(`${API_URL}/api/chats/validate-bot-access`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chats: cleanChats })
+      });
+
+      const data = (await response.json()) as ChatAccessReport | { error: string };
+      if (!response.ok) {
+        setChatReport(null);
+        setError((data as { error: string }).error);
+        return;
+      }
+
+      setChatReport(data as ChatAccessReport);
+    } finally {
+      setCheckingChats(false);
     }
   }
 
@@ -94,10 +137,7 @@ export function App() {
         city,
         publishAt: new Date(publishAt).toISOString(),
         drawAt: new Date(drawAt).toISOString(),
-        requiredChats: requiredChats
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean),
+        requiredChats: cleanChats,
         prizes,
         createdBy: 'organizer_1'
       })
@@ -113,12 +153,29 @@ export function App() {
     setDescription('');
     setPrizeTitle('Подарочный набор');
     setPrizeCount(1);
+    setRequiredChats(['']);
+    setChatReport(null);
     await loadGiveaways();
   }
 
   async function runAction(id: string, action: 'publish' | 'draw') {
     await fetch(`${API_URL}/api/giveaways/${id}/${action}`, { method: 'POST' });
     await loadGiveaways();
+  }
+
+  function updateChat(index: number, value: string) {
+    setRequiredChats((prev) => prev.map((item, itemIndex) => (itemIndex === index ? value : item)));
+  }
+
+  function addChatField() {
+    setRequiredChats((prev) => [...prev, '']);
+  }
+
+  function removeChatField(index: number) {
+    setRequiredChats((prev) => {
+      const next = prev.filter((_, itemIndex) => itemIndex !== index);
+      return next.length > 0 ? next : [''];
+    });
   }
 
   return (
@@ -181,11 +238,58 @@ export function App() {
           />
         </div>
 
-        <Input
-          value={requiredChats}
-          onChange={(event) => setRequiredChats(event.target.value)}
-          placeholder="Обязательные каналы (через запятую)"
-        />
+        <div className="channelsBlock">
+          <div className="channelsHeader">
+            <Typography.Label>Каналы / группы для обязательной подписки</Typography.Label>
+            <Button onClick={addChatField}>+ Добавить канал</Button>
+          </div>
+
+          {requiredChats.map((chat, index) => (
+            <div key={index} className="channelRow">
+              <Input
+                value={chat}
+                onChange={(event) => updateChat(index, event.target.value)}
+                placeholder="https://max.ru/... или chat_id"
+              />
+              <Button onClick={() => removeChatField(index)} disabled={requiredChats.length === 1}>
+                Удалить
+              </Button>
+            </div>
+          ))}
+
+          <div className="channelActions">
+            <Button onClick={verifyBotAccess} disabled={checkingChats || cleanChats.length === 0}>
+              {checkingChats ? 'Проверяю доступы…' : 'Проверить, что бот добавлен и админ'}
+            </Button>
+          </div>
+        </div>
+
+        {chatReport && (
+          <Panel className="checkPanel">
+            <Typography.Label>
+              Результат проверки: {chatReport.allPassed ? '✅ всё готово' : '⚠️ есть проблемы'}
+            </Typography.Label>
+            <Typography.Body>
+              Нужные права: {chatReport.requiredPermissions.join(', ')}
+            </Typography.Body>
+
+            <div className="checksList">
+              {chatReport.results.map((item, index) => (
+                <div key={index} className={`checkItem ${item.ok ? 'ok' : 'fail'}`}>
+                  <Typography.Body>
+                    {item.ok ? '✅' : '❌'} {item.chatTitle || item.input}
+                  </Typography.Body>
+                  <Typography.Label>
+                    {item.ok
+                      ? `chat_id=${item.chatId}`
+                      : item.reason ||
+                        `Не хватает прав: ${(item.missingPermissions || []).join(', ') || 'неизвестно'}`}
+                  </Typography.Label>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )}
 
         <Textarea
           value={description}
@@ -243,6 +347,11 @@ export function App() {
                   <div className="metaRow">
                     <Typography.Label>Победители</Typography.Label>
                     <Typography.Body>{item.winners.length ? item.winners.join(', ') : '—'}</Typography.Body>
+                  </div>
+
+                  <div className="metaRow channelsMeta">
+                    <Typography.Label>Каналы/группы</Typography.Label>
+                    <Typography.Body>{item.requiredChats.join(', ')}</Typography.Body>
                   </div>
 
                   <div className="actions">

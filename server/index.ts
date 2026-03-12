@@ -1,5 +1,6 @@
 import cors from 'cors';
 import express from 'express';
+import { botAccessService } from './botAccessService.js';
 import { giveawayService } from './giveawayService.js';
 import { startBot } from './maxBot.js';
 
@@ -21,6 +22,25 @@ app.post('/api/giveaways', (req, res) => {
   try {
     const giveaway = giveawayService.create(req.body);
     res.status(201).json(giveaway);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    res.status(400).json({ error: message });
+  }
+});
+
+app.post('/api/chats/validate-bot-access', async (req, res) => {
+  try {
+    const chats = Array.isArray(req.body?.chats)
+      ? req.body.chats.map((item: unknown) => String(item).trim()).filter(Boolean)
+      : [];
+
+    if (chats.length === 0) {
+      res.status(400).json({ error: 'Provide at least one channel/group link or id in chats[]' });
+      return;
+    }
+
+    const report = await botAccessService.validateChats(chats);
+    res.json(report);
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     res.status(400).json({ error: message });
