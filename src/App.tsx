@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import dayjs from 'dayjs';
 import { Button, Input, Panel, Textarea, Typography } from '@maxhub/max-ui';
 import { initMiniAppBridge } from './lib/maxBridge';
+import { Theme, THEME_KEY } from './types';
+import { Trash as TrashIcon } from 'lucide-react';
 
 type Prize = { id: string; title: string; count: number };
 type Giveaway = {
@@ -33,10 +35,7 @@ type ChatAccessReport = {
   results: ChatAccessResult[];
 };
 
-type Theme = 'light' | 'dark';
-
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
-const THEME_KEY = 'giveaway-theme';
 
 const statusMap: Record<Giveaway['status'], { text: string; className: string }> = {
   draft: { text: 'Черновик', className: 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200' },
@@ -48,12 +47,14 @@ function toDateInputValue(date: dayjs.Dayjs) {
   return date.format('YYYY-MM-DDTHH:mm');
 }
 
-function applyTheme(theme: Theme) {
-  document.documentElement.classList.toggle('dark', theme === 'dark');
+interface AppProps {
+  theme: Theme
+  setTheme: (theme: Theme) => void
+  toggleTheme: () => void
+  applyTheme: (theme: Theme) => void
 }
 
-export function App() {
-  const [theme, setTheme] = useState<Theme>('light');
+export function App({ theme, setTheme, toggleTheme, applyTheme }: AppProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [city, setCity] = useState('Москва');
@@ -94,12 +95,12 @@ export function App() {
     () =>
       Boolean(
         title.trim() &&
-          description.trim() &&
-          publishAt &&
-          drawAt &&
-          cleanChats.length > 0 &&
-          prizeTitle.trim() &&
-          prizeCount > 0
+        description.trim() &&
+        publishAt &&
+        drawAt &&
+        cleanChats.length > 0 &&
+        prizeTitle.trim() &&
+        prizeCount > 0
       ),
     [cleanChats.length, description, drawAt, prizeCount, prizeTitle, publishAt, title]
   );
@@ -177,13 +178,6 @@ export function App() {
     await loadGiveaways();
   }
 
-  function toggleTheme() {
-    const nextTheme: Theme = theme === 'light' ? 'dark' : 'light';
-    setTheme(nextTheme);
-    applyTheme(nextTheme);
-    localStorage.setItem(THEME_KEY, nextTheme);
-  }
-
   function updateChat(index: number, value: string) {
     setRequiredChats((prev) => prev.map((item, itemIndex) => (itemIndex === index ? value : item)));
   }
@@ -204,7 +198,7 @@ export function App() {
       <section className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-cyan-50 p-5 dark:border-indigo-900 dark:from-slate-900 dark:to-slate-800">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <Typography.Headline>MAX Giveaway Console</Typography.Headline>
-          <Button onClick={toggleTheme}>{theme === 'light' ? '🌙 Тёмная тема' : '☀️ Светлая тема'}</Button>
+          <Button onClick={toggleTheme}>{theme === 'light' ? '☀️' : '🌙'}</Button>
         </div>
         <Typography.Body>
           Создание, публикация и управление розыгрышами в одном mini app интерфейсе.
@@ -230,7 +224,7 @@ export function App() {
         </Panel>
       </section>
 
-      <Panel className="grid gap-3 rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+      <Panel className="grid gap-3 rounded-2xl border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900 border">
         <Typography.Title>Новый розыгрыш</Typography.Title>
 
         <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
@@ -255,14 +249,19 @@ export function App() {
           </div>
 
           {requiredChats.map((chat, index) => (
-            <div key={index} className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
+            <div key={index} className="gap-2 flex items-center">
               <Input
                 value={chat}
                 onChange={(event) => updateChat(index, event.target.value)}
                 placeholder="https://max.ru/... или chat_id"
+                className='w-full'
               />
-              <Button onClick={() => removeChatField(index)} disabled={requiredChats.length === 1}>
-                Удалить
+              <Button
+                onClick={() => removeChatField(index)}
+                disabled={requiredChats.length === 1}
+                className='bg-red-600'
+              >
+                <TrashIcon />
               </Button>
             </div>
           ))}
@@ -285,11 +284,10 @@ export function App() {
               {chatReport.results.map((item, index) => (
                 <div
                   key={index}
-                  className={`rounded-lg border p-2 ${
-                    item.ok
-                      ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-900/30'
-                      : 'border-rose-300 bg-rose-50 dark:border-rose-700 dark:bg-rose-900/30'
-                  }`}
+                  className={`rounded-lg border p-2 ${item.ok
+                    ? 'border-emerald-300 bg-emerald-50 dark:border-emerald-700 dark:bg-emerald-900/30'
+                    : 'border-rose-300 bg-rose-50 dark:border-rose-700 dark:bg-rose-900/30'
+                    }`}
                 >
                   <Typography.Body>
                     {item.ok ? '✅' : '❌'} {item.chatTitle || item.input}
@@ -298,7 +296,7 @@ export function App() {
                     {item.ok
                       ? `chat_id=${item.chatId}`
                       : item.reason ||
-                        `Не хватает прав: ${(item.missingPermissions || []).join(', ') || 'неизвестно'}`}
+                      `Не хватает прав: ${(item.missingPermissions || []).join(', ') || 'неизвестно'}`}
                   </Typography.Label>
                 </div>
               ))}
