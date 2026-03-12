@@ -1,13 +1,14 @@
 {
   "name": "giveaway-bot-max",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
+  "packageManager": "bun@1.2.14",
   "scripts": {
-    "dev": "concurrently \"npm:dev:server\" \"npm:dev:web\"",
+    "dev": "concurrently \"bun run dev:server\" \"bun run dev:web\"",
     "dev:server": "tsx watch server/index.ts",
     "dev:web": "vite",
-    "build": "npm run build:web && npm run build:server",
+    "build": "bun run build:web && bun run build:server",
     "build:web": "vite build",
     "build:server": "tsc -p tsconfig.server.json",
     "lint": "tsc --noEmit && tsc -p tsconfig.server.json --noEmit",

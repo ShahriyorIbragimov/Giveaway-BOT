@@ -1,48 +1,72 @@
-# Giveaway-BOT for MAX
+# Giveaway-BOT for MAX (Bun + MAX UI)
 
-MVP-проект бота и mini app для розыгрышей в MAX, построенный на:
+MVP-проект бота и mini app для розыгрышей в MAX.
 
+## Стек
+
+- **Runtime / package manager:** Bun
 - **Bot API:** [`@maxhub/max-bot-api`](https://github.com/max-messenger/max-bot-api-client-ts)
 - **UI kit:** [`@maxhub/max-ui`](https://github.com/max-messenger/max-ui)
-- **Mini app bridge:** API-мост MAX (`window.MaxBridge`) из [документации](https://dev.max.ru/docs/webapps/bridge)
+- **Mini app bridge:** `window.MaxBridge` из [официальной документации](https://dev.max.ru/docs/webapps/bridge)
+- **Backend:** Express + TypeScript
+- **Frontend:** React + Vite + TypeScript
 
-## Что реализовано
+## Что сделано (MVP)
 
-### Bot backend
-- Бот с обработкой `bot_started` и командой `/participate <giveawayId>`.
-- Генерация сценария участия по диплинку `gw_<id>`.
-- REST API для создания, публикации, участия и выбора победителей.
-- Валидация входных данных розыгрыша (`zod`).
+### Backend
+- создание, публикация и завершение розыгрыша;
+- регистрация участников;
+- случайный выбор победителей по количеству призовых мест;
+- deep-link для старта через `startapp=gw_<id>`;
+- запуск MAX бота при наличии токена.
 
-### Mini app (Admin UI)
-- Простая адаптивная форма создания розыгрыша.
-- Список розыгрышей со статусами и кнопками действий (опубликовать / выбрать победителей).
-- Инициализация MAX bridge при старте приложения (`ready`, `expand`, `setHeaderColor`).
+### Mini app UI
+- новый визуальный стиль (dashboard + карточки + статусы);
+- адаптивная форма создания розыгрыша;
+- карточки статистики (всего, активные, участники, победители);
+- список розыгрышей с действиями (`Опубликовать`, `Выбрать победителей`).
 
-## Быстрый старт
+---
 
-```bash
-npm install
-npm run dev
-```
+## Какие токены/переменные нужны
 
-- Frontend: `http://localhost:5173`
-- Backend API: `http://localhost:3000`
-
-## ENV
-
-Создайте `.env` при необходимости:
+Создайте файл `.env` в корне проекта:
 
 ```env
-MAX_BOT_TOKEN=...
-MAX_BOT_USERNAME=your_bot
+MAX_BOT_TOKEN=your_real_max_bot_token
+MAX_BOT_USERNAME=your_bot_username
 PORT=3000
 VITE_API_URL=http://localhost:3000
 ```
 
-Если `MAX_BOT_TOKEN` не задан, API и mini app продолжают работать, а бот не запускается.
+### Что означает каждая переменная
+- `MAX_BOT_TOKEN` — токен бота из Master Bot (обязателен только для реального запуска бота).
+- `MAX_BOT_USERNAME` — username бота (используется для генерации deep-link в API publish).
+- `PORT` — порт backend сервера.
+- `VITE_API_URL` — URL backend, откуда mini app берет данные.
 
-## API (MVP)
+Если `MAX_BOT_TOKEN` не указан, backend + UI работают, но сам бот не стартует.
+
+---
+
+## Запуск через Bun
+
+```bash
+bun install
+bun run dev
+```
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3000`
+
+## Сборка и проверка
+
+```bash
+bun run lint
+bun run build
+```
+
+## REST API
 
 - `GET /api/giveaways`
 - `POST /api/giveaways`
@@ -52,6 +76,6 @@ VITE_API_URL=http://localhost:3000
 
 ## Ограничения текущего MVP
 
-- Данные хранятся в памяти процесса (без PostgreSQL).
-- Проверка подписки пока mock-логикой (без реального вызова `/chats/{chatId}/members`).
-- Нет очередей/планировщика задач и автопереопубликования постов.
+- данные хранятся in-memory (без PostgreSQL);
+- проверка подписки сейчас mock (реальную проверку можно подключить через `/chats/{chatId}/members`);
+- нет очереди/планировщика для авто-публикации/авто-обновления.

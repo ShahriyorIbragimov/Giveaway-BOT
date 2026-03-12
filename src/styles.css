@@ -1,7 +1,7 @@
 :root {
-  color-scheme: light dark;
-  font-family: Inter, system-ui, sans-serif;
-  background: #f4f6fb;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #dce6ff;
+  background: radial-gradient(circle at top left, #1f2d5c, #0a1026 55%, #090d1d);
 }
 
 * {
@@ -10,50 +10,163 @@
 
 body {
   margin: 0;
+  min-height: 100vh;
+  background: transparent;
 }
 
 .page {
-  max-width: 860px;
+  max-width: 1120px;
   margin: 0 auto;
-  padding: 16px;
+  padding: 20px;
   display: grid;
   gap: 16px;
 }
 
-.card {
-  padding: 16px;
+.hero {
+  padding: 20px;
+  border-radius: 18px;
+  background: linear-gradient(140deg, rgba(82, 120, 255, 0.35), rgba(50, 199, 255, 0.2));
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(163, 188, 255, 0.35);
+  display: grid;
+  gap: 6px;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.statCard,
+.formCard,
+.giveawayCard,
+.emptyState {
+  border: 1px solid rgba(146, 167, 255, 0.25);
+  background: rgba(10, 18, 40, 0.7);
   border-radius: 16px;
+  backdrop-filter: blur(7px);
+}
+
+.statCard {
+  padding: 14px;
+  display: grid;
+  gap: 8px;
+}
+
+.formCard {
+  padding: 16px;
   display: grid;
   gap: 12px;
 }
 
-.grid {
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.listSection {
   display: grid;
   gap: 10px;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.list {
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.giveawayGrid {
   display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.giveawayCard {
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.giveawayHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.status {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.statusDraft {
+  color: #ffe8a3;
+  background: rgba(255, 196, 0, 0.2);
+}
+
+.statusPublished {
+  color: #8dffbf;
+  background: rgba(9, 196, 108, 0.2);
+}
+
+.statusFinished {
+  color: #ffbec9;
+  background: rgba(236, 72, 153, 0.22);
+}
+
+.description {
+  opacity: 0.85;
+}
+
+.metaRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed rgba(145, 162, 225, 0.2);
 }
 
 .actions {
   display: flex;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 8px;
 }
 
-.muted {
-  opacity: 0.8;
+.errorText {
+  color: #ff7f9d;
 }
 
-.error {
-  color: #ef4444;
+.emptyState {
+  padding: 18px;
+}
+
+@media (max-width: 900px) {
+  .statsGrid,
+  .giveawayGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 640px) {
-  .grid {
+  .page {
+    padding: 14px;
+  }
+
+  .statsGrid,
+  .giveawayGrid,
+  .formGrid {
     grid-template-columns: 1fr;
+  }
+
+  .listHeader,
+  .giveawayHeader,
+  .metaRow {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
