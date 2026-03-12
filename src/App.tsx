@@ -3,7 +3,11 @@ import dayjs from 'dayjs';
 import { Button, Input, Panel, Textarea, Typography } from '@maxhub/max-ui';
 import { initMiniAppBridge } from './lib/maxBridge';
 import { Theme, THEME_KEY } from './types';
-import { Trash as TrashIcon } from 'lucide-react';
+import {
+  Trash,
+  Sun,
+  Moon
+} from 'lucide-react';
 
 type Prize = { id: string; title: string; count: number };
 type Giveaway = {
@@ -198,7 +202,7 @@ export function App({ theme, setTheme, toggleTheme, applyTheme }: AppProps) {
       <section className="rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-cyan-50 p-5 dark:border-indigo-900 dark:from-slate-900 dark:to-slate-800">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <Typography.Headline>MAX Giveaway Console</Typography.Headline>
-          <Button onClick={toggleTheme}>{theme === 'light' ? '☀️' : '🌙'}</Button>
+          <Button onClick={toggleTheme}>{theme === 'light' ? <Sun /> : <Moon />}</Button>
         </div>
         <Typography.Body>
           Создание, публикация и управление розыгрышами в одном mini app интерфейсе.
@@ -259,9 +263,9 @@ export function App({ theme, setTheme, toggleTheme, applyTheme }: AppProps) {
               <Button
                 onClick={() => removeChatField(index)}
                 disabled={requiredChats.length === 1}
-                className='bg-red-600'
+                className='bg-red-500'
               >
-                <TrashIcon />
+                <Trash className='text-white' />
               </Button>
             </div>
           ))}
